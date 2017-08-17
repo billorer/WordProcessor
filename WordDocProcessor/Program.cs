@@ -46,9 +46,13 @@ namespace WordDocProcessor
             string answer = "";
             string heading2 = "";
             string heading3 = "";
+            string heading4 = "";
+            string previousParentHeading = "";
 
             for (int i = 0; i < docs.Paragraphs.Count; i++)
             {
+
+
                 Microsoft.Office.Interop.Word.Style style = docs.Paragraphs[i + 1].get_Style() as Microsoft.Office.Interop.Word.Style;
                 string styleName = style.NameLocal;
                 string currentText = docs.Paragraphs[i + 1].Range.Text.ToString();
@@ -57,13 +61,18 @@ namespace WordDocProcessor
                 currentText = RemoveNewLineFromString(currentText);
                 currentText = CleanInvalidXmlChars(currentText);
 
+                //if (i % 100 == 0)
+                //{
+                //    Console.WriteLine(currentText);
+                //}
+
                 if (styleName == "Heading 2")
                 {
                     heading2 = currentText;
+                    previousParentHeading = heading2;
                     questions.Add(heading2);
-
                     if (questions.Count != 0 && answer != "")
-                    {
+                    {                       
                         answers.Add(answer);
                         answer = "";
                     }
@@ -71,28 +80,51 @@ namespace WordDocProcessor
                 else if (styleName == "Heading 3")
                 {
                     heading3 = heading2 + " " + currentText;
-                    questions.Add(heading3);
+                    previousParentHeading = heading3;
+                    
                     if (questions.Count != 0 && answer != "")
                     {
+                        questions.Add(heading3);
                         answers.Add(answer);
                         answer = "";
                     }
                 }
                 else if (styleName == "Heading 4")
                 {
-                    questions.Add(heading3 + " " + currentText);
+                    heading4 = heading3 + " " + currentText;
+                    previousParentHeading = heading4;
+                    
                     if (questions.Count != 0 && answer != "")
                     {
+                        questions.Add(heading4);
+                        answers.Add(answer);
+                        answer = "";
+                    }
+                }else if(styleName == "Titel:Label")
+                {
+                    
+                    if (questions.Count != 0 && answer != "")
+                    {
+                        questions.Add(previousParentHeading + " " + currentText);
                         answers.Add(answer);
                         answer = "";
                     }
                 }
-                else if (!currentText.Contains("Figure")) //the currentText should contain only the answer section
+                else if (!currentText.Contains("Figure") || currentText != " / ") //the currentText should contain only the answer section
                 {
                     if (questions.Count != 0)
                     {
                         answer += currentText + " ";
                     }
+                }
+                else
+                {
+                    Console.WriteLine("Style: " + styleName + " Text: " + currentText);
+                }
+                if (i == docs.Paragraphs.Count - 1) //the last questions answer
+                {
+                    answers.Add(answer);
+                    answer = "";
                 }
             }
 
