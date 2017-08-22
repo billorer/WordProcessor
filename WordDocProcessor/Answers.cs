@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace WordDocProcessor
 {
@@ -23,6 +21,8 @@ namespace WordDocProcessor
         private List<string> listNotes;
 
         private List<string> listTables;
+
+        private string finalAnswer;
 
         /// <summary>
         /// The Sequence of the elements
@@ -144,6 +144,123 @@ namespace WordDocProcessor
             }
         }
 
+        public string AnswerToString()
+        {
+
+            bool ulElement = false;
+
+            for (int i = 0; i < sequence.Count; i++)
+            {
+                switch (sequence[i])
+                {
+                    case 1:
+                        finalAnswer += "<p>" + listParagraph[0] + "</p>";
+                        listParagraph.RemoveAt(0);
+                        break;
+                    case 3:
+                        if (!ulElement)
+                        {
+                            finalAnswer += "<ul style='list-style-type:disc'>";
+                            ulElement = true;
+                        }
+
+                        finalAnswer += "<li><p>";
+                        finalAnswer += listCircle[0];
+                        listCircle.RemoveAt(0);
+                        finalAnswer += "</p></li>";
+
+                        if (i + 1 < sequence.Count)
+                        {
+                            if (sequence[i + 1] != 3)
+                            {
+                                finalAnswer += "</ul>";
+                                ulElement = false;
+                            }
+                        }
+
+                        break;
+                    case 2:
+                        if (!ulElement)
+                        {
+                            finalAnswer += "<ul style='list-style-type:number'>";
+                            ulElement = true;
+                        }
+                        
+
+                        finalAnswer += "<li><p>";
+                        finalAnswer += listDecimal[0];
+                        listDecimal.RemoveAt(0);
+                        finalAnswer += "</p></li>";
+
+                        if (i + 1 < sequence.Count)
+                        {
+                            if (sequence[i + 1] != 2)
+                            {
+                                finalAnswer += "</ul>";
+                            }
+                        }
+
+                        break;
+                    case 4:
+                        if (listNotes[0].Equals("Note"))
+                        {
+                            if(sequence[i - 1] == 4)
+                            {
+                                finalAnswer += "</div>";
+                            }
+
+                            finalAnswer += "<div class='boxWithNoSides'><p class='note'>";
+                            finalAnswer += listNotes[0];
+                            listNotes.RemoveAt(0);
+                            finalAnswer += "</p>";
+                        }
+                        else
+                        {
+                            finalAnswer += listNotes[0];
+                            listNotes.RemoveAt(0);
+                        }
+
+                        if (i + 1 < sequence.Count)
+                        {
+                            if (sequence[i + 1] != 4)
+                            {
+                                finalAnswer += "</div>";
+                            }
+                        }
+
+                        break;
+                    case 5:
+                        string[] substrings = Regex.Split(listParagraph[0], @"/(.*)\\img_.*(.*)/");
+                        int imageNumber = Int32.Parse(Regex.Match(substrings[0], @"\d+").Value);                       
+                        string[] modifiedBeforeText = Regex.Split(substrings[0], "img_" + imageNumber);
+
+                        if (modifiedBeforeText[0] != "")
+                        {
+                            finalAnswer += "<p>" + modifiedBeforeText[0];
+                            finalAnswer += "<img src= '/Home/GetImage?imgNumber=" + imageNumber + "'/>";
+                        }
+                        else
+                        {
+                            finalAnswer += "<img class='figureImage' src= '/Home/GetImage?imgNumber=" + imageNumber + "'/>";
+                        }
+                        
+                        if(modifiedBeforeText[1] != "")
+                        {
+                            finalAnswer += modifiedBeforeText[1]
+                                + "</p>";
+                        }
+
+                        listParagraph.RemoveAt(0);
+                        break;
+                    case 6:
+                        finalAnswer += listTables[0];
+                        listTables.RemoveAt(0);
+                        break;
+                }
+            }
+            return finalAnswer;
+        }
+
         public Answers()
         {
             listParagraph = new List<string>();    
@@ -153,6 +270,8 @@ namespace WordDocProcessor
             listTables = new List<string>();
 
             sequence = new List<int>();
+
+            finalAnswer = "";
         }
     }
 }
