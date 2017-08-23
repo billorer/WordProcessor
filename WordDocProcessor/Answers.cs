@@ -184,8 +184,7 @@ namespace WordDocProcessor
                         {
                             finalAnswer += "<ul style='list-style-type:number'>";
                             ulElement = true;
-                        }
-                        
+                        }                       
 
                         finalAnswer += "<li><p>";
                         finalAnswer += listDecimal[0];
@@ -204,9 +203,12 @@ namespace WordDocProcessor
                     case 4:
                         if (listNotes[0].Equals("Note"))
                         {
-                            if(sequence[i - 1] == 4)
+                            if (i - 1 >= 0)
                             {
-                                finalAnswer += "</div>";
+                                if (sequence[i - 1] == 4)
+                                {
+                                    finalAnswer += "</div>";
+                                }
                             }
 
                             finalAnswer += "<div class='boxWithNoSides'><p class='note'>";

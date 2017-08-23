@@ -27,7 +27,7 @@ namespace WordDocProcessor
         private static List<string> docTablesList;
 
         private static int imageNumber = 1;
-        private static int tableNumber = 0;
+        private static int tableNumber = 1;
 
         /// <summary>
         /// This function creates a WORD DOCUMENT object and returns it.
@@ -65,7 +65,7 @@ namespace WordDocProcessor
             ExtractObjectsFromWord.ExtractImagesFromDocIntoFile(word, docs, PublicFunctionsVariables.imagesFolderPath);
 
             docTablesList = ExtractObjectsFromWord.ExtractTablesFromDocIntoList(docs);
-
+            PublicFunctionsVariables.ExportDataToXMLFile("tables","table", @"c:\tables.xml", docTablesList);
             for (int i = 0; i < docs.Paragraphs.Count; i++)
             {
                 Style style = docs.Paragraphs[i + 1].get_Style() as Style;
@@ -87,6 +87,12 @@ namespace WordDocProcessor
                 if (styleName == "Heading 2")
                 {
                     foundFirstHeading = true;
+                }
+
+                // This is how currently we try to figure it out when a table ends...
+                if (!styleName.Contains("Tab:Kopf") && !styleName.Contains("Tab:Absatz") && !styleName.Contains("Normal"))
+                {
+                    signTable = false;
                 }
 
                 if (foundFirstHeading)
@@ -149,14 +155,16 @@ namespace WordDocProcessor
                         if (!signTable)
                         {
                             currentAnswer.SetSequenceElement = currentAnswer.SeqTables;
-                            currentAnswer.SetListTablesElement = docTablesList[tableNumber++];
+                            currentAnswer.SetListTablesElement = docTablesList[tableNumber];
+                            tableNumber++;
+                            signTable = true;
                         }
 
-                        signTable = true;
+                        
                     }
                     else if (styleName.Contains("Tab:Absatz"))
                     {
-                        signTable = false;
+                        //signTable = false;
                     }
                     else if (currentText == "/")
                     {
