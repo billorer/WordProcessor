@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace WordDocProcessor
@@ -154,7 +155,15 @@ namespace WordDocProcessor
                 switch (sequence[i])
                 {
                     case 1:
-                        finalAnswer += "<p>" + listParagraph[0] + "</p>";
+                        if(listParagraph[0].Contains("Figure "))
+                        {
+                            finalAnswer += "<p class='figureText'>" + listParagraph[0] + "</p>";
+                        }
+                        else
+                        {
+                            finalAnswer += "<p>" + listParagraph[0] + "</p>";
+                        }
+
                         listParagraph.RemoveAt(0);
                         break;
                     case 3:
@@ -232,26 +241,32 @@ namespace WordDocProcessor
 
                         break;
                     case 5:
-                        string[] substrings = Regex.Split(listParagraph[0], @"/(.*)\\img_.*(.*)/");
-                        int imageNumber = Int32.Parse(Regex.Match(substrings[0], @"\d+").Value);                       
-                        string[] modifiedBeforeText = Regex.Split(substrings[0], "img_" + imageNumber);
+                        string[] substring = listParagraph[0].Split(new string[] { "img_" }, StringSplitOptions.None);
+                        finalAnswer += "<p>";
+                        for (int index = 0; index < substring.Length; index++)
+                        {
+                            if (substring[index] != "")
+                            {
+                                if (listParagraph[0].Length <= 7) // img_100
+                                {
+                                    int imageNumber = Int32.Parse(Regex.Match(substring[index], @"\d+").Value);
+                                    finalAnswer += "<img class='figureImage' src= '/Home/GetImage?imgNumber=" + imageNumber + "'/>";
+                                }
+                                else
+                                if (substring[index].Any(char.IsDigit))
+                                {
+                                    int imageNumber = Int32.Parse(Regex.Match(substring[index], @"\d+").Value);
+                                    string replacedNumbers = Regex.Replace(substring[index], "[0-9]{2,}", "<img src='/Home/GetImage?imgNumber=" + imageNumber + "'/>");
 
-                        if (modifiedBeforeText[0] != "")
-                        {
-                            finalAnswer += "<p>" + modifiedBeforeText[0];
-                            finalAnswer += "<img src= '/Home/GetImage?imgNumber=" + imageNumber + "'/>";
+                                    finalAnswer += replacedNumbers;
+                                }
+                                else 
+                                {
+                                    finalAnswer += substring[index];
+                                }
+                            }
                         }
-                        else
-                        {
-                            finalAnswer += "<img class='figureImage' src= '/Home/GetImage?imgNumber=" + imageNumber + "'/>";
-                        }
-                        
-                        if(modifiedBeforeText[1] != "")
-                        {
-                            finalAnswer += modifiedBeforeText[1]
-                                + "</p>";
-                        }
-
+                        finalAnswer += "</p>";
                         listParagraph.RemoveAt(0);
                         break;
                     case 6:

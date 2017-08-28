@@ -79,9 +79,9 @@ namespace WordDocProcessor
                 // Just to get minimal information about the program when it runs
                 if (i % 100 == 0)
                 {
-                    Console.WriteLine(currentText);
+                //    Console.WriteLine(currentText);
                 }
-                //Console.WriteLine("Style: " + styleName + " Text: " + currentText);
+                Console.WriteLine("Style: " + styleName + " Text: " + currentText);
 
                 // From now on we can start adding questions and their answers
                 if (styleName == "Heading 2")
@@ -135,6 +135,42 @@ namespace WordDocProcessor
                             questions.Add(previousParentHeading + " " + currentText);
                         }
                     }
+                    else if (currentText.Contains("///"))
+                    {
+                        int tmpNumber = imageNumber + 1;
+                        int tmpNumber2 = tmpNumber + 1;
+                        currentAnswer.SetListParagraphElement = currentText.Replace("///", "img_" + imageNumber.ToString()
+                            + " img_" + tmpNumber.ToString() + " img_" + tmpNumber2.ToString());
+                        imageNumber = tmpNumber2 + 1;
+                        currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
+                    }
+                    else if (currentText.Contains(" /"))
+                    {
+                        currentAnswer.SetListParagraphElement = currentText.Replace("/", "img_" + imageNumber.ToString());
+                        imageNumber++;
+                        currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
+                    }
+                    else if (currentText.Contains("/"))
+                    {
+                        int charLocation = currentText.IndexOf("/", StringComparison.Ordinal);
+
+                        if (charLocation == 0)
+                        {
+                            currentAnswer.SetListParagraphElement = currentText.Replace("/", "img_" + imageNumber.ToString());
+                            imageNumber++;
+                            currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
+                        }
+                        else if (charLocation > 0 && charLocation < currentText.Length)
+                        {
+                            if (currentText.Substring(charLocation - 1, 2) == "//" ||
+                                currentText.Substring(charLocation, 2) == "//")
+                            {
+                                currentAnswer.SetListParagraphElement = currentText.Replace("/", "img_" + imageNumber.ToString());
+                                imageNumber++;
+                                currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
+                            }
+                        }
+                    }
                     else if (styleName == "Liste:Punkt")
                     {
                         currentAnswer.SetListCircleElement = currentText;
@@ -159,8 +195,6 @@ namespace WordDocProcessor
                             tableNumber++;
                             signTable = true;
                         }
-
-                        
                     }
                     else if (styleName.Contains("Tab:Absatz"))
                     {
@@ -172,17 +206,12 @@ namespace WordDocProcessor
                         imageNumber++;
                         currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
                     }
-                    else if (currentText.Contains(" /"))
-                    {
-                        currentAnswer.SetListParagraphElement = currentText.Replace("/", "img_" + imageNumber.ToString());
-                        imageNumber++;
-                        currentAnswer.SetSequenceElement = currentAnswer.SeqImage;
-                    }
                     else if (currentText != "")
                     {
                         currentAnswer.SetListParagraphElement = currentText;
                         currentAnswer.SetSequenceElement = currentAnswer.SeqParagraph;
                     }
+
 
                     if (i == docs.Paragraphs.Count - 1) //the last questions answer
                     {
