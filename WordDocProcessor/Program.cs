@@ -79,9 +79,9 @@ namespace WordDocProcessor
                 // Just to get minimal information about the program when it runs
                 if (i % 100 == 0)
                 {
-                //    Console.WriteLine(currentText);
+                    Console.WriteLine(currentText);
                 }
-                Console.WriteLine("Style: " + styleName + " Text: " + currentText);
+                //Console.WriteLine("Style: " + styleName + " Text: " + currentText);
 
                 // From now on we can start adding questions and their answers
                 if (styleName == "Heading 2")
